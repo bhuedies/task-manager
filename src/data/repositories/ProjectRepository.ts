@@ -1,12 +1,15 @@
-import { Task } from '@/domain/entities/Task';
-import { ITaskRepository } from '@/domain/repositories/ITaskRepository';
+import { Project } from '@/domain/entities/Project';
+import { IProjectRepository } from '@/domain/repositories/IProjectRepository';
 import httpClient from '@/infrastructure/config/httpClient';
 import axios from 'axios';
 
-export class TaskRepository implements ITaskRepository {
-  async create(task: Task): Promise<Task | null> {
+export class ProjectRepository implements IProjectRepository {
+  async create(project: Project): Promise<Project | null> {
     try {
-      const response = await httpClient.post<Task>('/tasks', task);
+      const response = await httpClient.post<Project>(
+        '/projects',
+        project
+      );
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -15,9 +18,9 @@ export class TaskRepository implements ITaskRepository {
       throw error;
     }
   }
-  async update(task: Task): Promise<void> {
+  async update(project: Project): Promise<void> {
     try {
-      await httpClient.put(`/tasks`, task);
+      await httpClient.put(`/projects`, project);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error);
@@ -27,7 +30,7 @@ export class TaskRepository implements ITaskRepository {
   }
   async delete(id: string): Promise<void> {
     try {
-      await httpClient.delete(`/tasks/${id}`);
+      await httpClient.delete(`/projects/${id}`);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error);
@@ -35,11 +38,21 @@ export class TaskRepository implements ITaskRepository {
       throw error;
     }
   }
-
-  async findAll(byProjectId: string): Promise<Task[]> {
+  async findAll(): Promise<Project[]> {
     try {
-      const response = await httpClient.get<Task[]>(
-        `/tasks/projects/${byProjectId}`
+      const response = await httpClient.get<Project[]>('/projects');
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error);
+      }
+      throw error;
+    }
+  }
+  async findById(id: string): Promise<Project | null> {
+    try {
+      const response = await httpClient.get<Project>(
+        `/projects/${id}`
       );
       return response.data;
     } catch (error) {
@@ -49,17 +62,6 @@ export class TaskRepository implements ITaskRepository {
       throw error;
     }
   }
-  async findById(id: string): Promise<Task | null> {
-    try {
-      const response = await httpClient.get<Task>(`/tasks/${id}`);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return null;
-      }
-      throw error;
-    }
-  }
 }
 
-export const taskRepositoryInstance = new TaskRepository();
+export const projectRepositoryInstance = new ProjectRepository();
