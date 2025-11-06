@@ -7,17 +7,15 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const task = mockDbInstance.getTaskById(id);
-  console.log('🚀 ~ GET ~ task:', task);
-
-  if (!task) {
+  const project = mockDbInstance.getProjectById(id);
+  if (!project) {
     return NextResponse.json(
-      { message: 'Task not found in mock database' },
+      { message: 'project not found in mock database' },
       { status: 404 }
     );
   }
 
-  return NextResponse.json(task, { status: 200 });
+  return NextResponse.json(project, { status: 200 });
 }
 
 export async function DELETE(
@@ -25,6 +23,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  mockDbInstance.deleteTask(id);
-  return NextResponse.json(null, { status: 204 });
+  mockDbInstance.deleteProject(id);
+  mockDbInstance.deleteTaskByProjectId(id);
+  return NextResponse.json(null, { status: 200 });
 }

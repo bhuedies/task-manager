@@ -3,10 +3,10 @@ import { mockDbInstance } from '@/infrastructure/data/mockData';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = params.id;
-  const user = mockDbInstance.getUserById(userId);
+  const { id } = await params;
+  const user = await mockDbInstance.getUserById(id);
 
   if (!user) {
     return NextResponse.json(

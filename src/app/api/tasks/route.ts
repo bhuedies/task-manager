@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { mockDbInstance } from '@/infrastructure/data/mockData';
 
 export async function GET() {
-  const users = mockDbInstance.getTasks();
-  return NextResponse.json(users, { status: 200 });
+  const tasks = mockDbInstance.getTasks();
+  return NextResponse.json(tasks, { status: 200 });
 }
 
 export async function POST(request: Request) {
