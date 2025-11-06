@@ -5,13 +5,17 @@ import { Project } from '@/domain/entities/Project';
 import { Task } from '@/domain/entities/Task';
 import { DeleteTask } from '@/domain/use-cases/DeleteTask';
 import { ListTasks } from '@/domain/use-cases/ListTasks';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TaskModal from './TaskModal';
+import ToggleSwitch from '../ui/ToggleSwitch';
+import { UpdateTaskStatus } from '@/domain/use-cases/UpdateTaskStatus';
 
 interface TaskModalProps {
   dataProject: Project | null;
   previousPage: () => void;
 }
+
+type SortDirection = 'asc' | 'desc' | null;
 
 export default function TaskTable({
   dataProject,
@@ -22,6 +26,8 @@ export default function TaskTable({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCreated, setIsCreated] = useState(false);
+  const [sortDirection, setSortDirection] =
+    useState<SortDirection>('asc');
 
   useEffect(() => {
     refreshTasks();
@@ -62,6 +68,60 @@ export default function TaskTable({
 
   const handlePreviousPage = () => {
     previousPage();
+  };
+
+  const handleSortByStatus = () => {
+    setSortDirection((prevDirection) => {
+      if (prevDirection === 'asc') {
+        return 'desc';
+      }
+      if (prevDirection === 'desc') {
+        return 'asc';
+      }
+      return 'asc';
+    });
+  };
+
+  const sortedTasks = useMemo(() => {
+    if (!tasks || !Array.isArray(tasks)) {
+      return [];
+    }
+    if (!sortDirection) return tasks;
+
+    const sorted = [...tasks].sort((a, b) => {
+      const aStatus = a.completed ? 1 : 0;
+      const bStatus = b.completed ? 1 : 0;
+
+      if (sortDirection === 'asc') {
+        return aStatus - bStatus;
+      } else {
+        return bStatus - aStatus;
+      }
+    });
+
+    return sorted;
+  }, [tasks, sortDirection]);
+
+  const handleToggle = async (itemId: string, isOn: boolean) => {
+    try {
+      const updateStatus = new UpdateTaskStatus(
+        taskRepositoryInstance
+      );
+      await updateStatus.execute(itemId, isOn);
+
+      setTasks((prevTasks) => {
+        if (!prevTasks) return null;
+
+        return prevTasks.map((task) => {
+          if (task.id === itemId) {
+            return { ...task, completed: isOn };
+          }
+          return task;
+        });
+      });
+    } catch (error) {
+      console.error('Failed to update task status:', error);
+    }
   };
 
   return (
@@ -106,7 +166,11 @@ export default function TaskTable({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-6/12">
                   Description
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-6/12">
+                <th
+                  onClick={handleSortByStatus}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-6/12 
+               cursor-pointer hover:bg-gray-100 transition duration-150"
+                >
                   Status
                 </th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">
@@ -115,7 +179,7 @@ export default function TaskTable({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {tasks?.map((task) => (
+              {sortedTasks?.map((task) => (
                 <tr key={task.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {task.id}
@@ -127,7 +191,11 @@ export default function TaskTable({
                     {task.description}
                   </td>
                   <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
-                    {task.completed}
+                    <ToggleSwitch
+                      initialState={false}
+                      itemId={task.id}
+                      onToggle={handleToggle}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <button

@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { Project } from '../entities/Project';
 import { IProjectRepository } from '../repositories/IProjectRepository';
 
@@ -20,6 +21,7 @@ export class CreateProject {
     const createdProject = await this.projectRepository.create(
       mockCreatedProject
     );
+    toast.success('Project Created!');
 
     return createdProject;
   }

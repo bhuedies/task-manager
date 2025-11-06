@@ -60,6 +60,20 @@ export class MockDatabase {
     }
   }
 
+  statusOnTask(id: string): void {
+    const index = this.tasks.findIndex((t) => t.id === id);
+    if (index !== -1) {
+      this.tasks[index].completed = true;
+    }
+  }
+
+  statusOffTask(id: string): void {
+    const index = this.tasks.findIndex((t) => t.id === id);
+    if (index !== -1) {
+      this.tasks[index].completed = false;
+    }
+  }
+
   deleteTask(id: string): void {
     this.tasks = this.tasks.filter((task) => task.id !== id);
   }

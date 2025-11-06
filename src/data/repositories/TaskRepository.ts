@@ -4,6 +4,16 @@ import httpClient from '@/infrastructure/config/httpClient';
 import axios from 'axios';
 
 export class TaskRepository implements ITaskRepository {
+  async updateStatus(id: string, status: boolean): Promise<void> {
+    try {
+      await httpClient.put(`/tasks`, { id: id, status: status });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error);
+      }
+      throw error;
+    }
+  }
   async create(task: Task): Promise<Task | null> {
     try {
       const response = await httpClient.post<Task>('/tasks', task);
